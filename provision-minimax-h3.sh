@@ -266,7 +266,7 @@ main() {
     mkdir -p "$MODELS_DIR"/{checkpoints,text_encoders,latent_upscale_models,loras}
 
     # Write workflows
-    write_api_workflow
+    # write_api_workflow
 
     # Periodically cleanup old generations
     set_cleanup_job
