@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+
+
 ### Configuration ###
 WORKSPACE_DIR="${WORKSPACE:-/workspace}"
 COMFYUI_DIR="${WORKSPACE_DIR}/ComfyUI"
@@ -12,6 +14,34 @@ HF_SEMAPHORE_DIR="${WORKSPACE_DIR}/hf_download_sem_$$"
 HF_MAX_PARALLEL=3
 WGET_MAX_PARALLEL=5
 MODEL_LOG="${MODEL_LOG:-/var/log/portal/comfyui.log}"
+
+
+echo "========================================="
+echo "Updating ComfyUI"
+echo "========================================="
+
+cd "$COMFYUI_DIR"
+
+git fetch origin
+git reset --hard origin/master
+
+python -m pip install -r requirements.txt
+
+
+echo "========================================="
+echo "Checking MiniMax H3 support"
+echo "========================================="
+
+if grep -q "MiniMaxH3ReferenceToVideo" \
+    "$COMFYUI_DIR/comfy_extras/nodes_minimax_h3.py"; then
+
+    echo "MiniMax H3 node found"
+
+else
+    echo "ERROR: MiniMaxH3ReferenceToVideo node NOT FOUND"
+    exit 1
+fi
+
 
 # Model declarations: "URL|OUTPUT_PATH"
 HF_MODELS=(
