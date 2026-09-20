@@ -24,7 +24,7 @@ HF_MODELS=(
   "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors
   |$MODELS_DIR/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors"
   "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors
-  |$MODELS_DIR/loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf.16safetensors"
+  |$MODELS_DIR/loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors"
 )
 
 # Wget declarations: "URL|OUTPUT_PATH"
