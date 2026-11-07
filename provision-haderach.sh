@@ -65,34 +65,7 @@ for node in ComfyUI-KJNodes ComfyUI-VideoHelperSuite ComfyUI-Easy-Use \
 done
 pip_install -c "$constraints" "${requirements[@]}" 'huggingface_hub>=0.34'
 
-check_sage() {
-    "$python_bin" - <<'PY'
-from sageattention.core import (
-    attn_false, get_cuda_arch_versions, per_block_int8_triton,
-    per_channel_fp8, per_thread_int8_triton, per_warp_int8_cuda,
-)
-from sageattention import sageattn
-import torch
-
-assert torch.cuda.is_available(), "CUDA is unavailable"
-assert get_cuda_arch_versions(), "SageAttention cannot detect a CUDA architecture"
-q = torch.randn((1, 2, 128, 128), device="cuda", dtype=torch.float16)
-out = sageattn(q, q, q)
-assert torch.isfinite(out).all().item(), "SageAttention GPU smoke test failed"
-PY
-}
-if [[ -n "${HADERACH_SAGE_WHEEL:-}" ]]; then
-    pip_install --no-deps --force-reinstall "$HADERACH_SAGE_WHEEL"
-elif ! check_sage; then
-    command -v nvcc >/dev/null ||
-        die 'SageAttention needs a compatible HADERACH_SAGE_WHEEL or an image with nvcc'
-    pip_install setuptools wheel packaging ninja
-    log 'Building SageAttention v2.2.0 from upstream source'
-    MAX_JOBS="${MAX_JOBS:-4}" pip_install --no-build-isolation --no-deps \
-        --force-reinstall 'git+https://github.com/thu-ml/SageAttention.git@v2.2.0'
-fi
-check_sage
-
+log 'Downloading and validating MiniMax H3 model files'
 # Source repo, path in that repo, destination directory, optional revision.
 "$python_bin" - "$models_dir" <<'PY'
 import os
@@ -145,5 +118,33 @@ for repo, remote, category, revision in assets:
                 raise
             sleep(2 ** (attempt + 1))
 PY
+
+check_sage() {
+    "$python_bin" - <<'PY'
+from sageattention.core import (
+    attn_false, get_cuda_arch_versions, per_block_int8_triton,
+    per_channel_fp8, per_thread_int8_triton, per_warp_int8_cuda,
+)
+from sageattention import sageattn
+import torch
+
+assert torch.cuda.is_available(), "CUDA is unavailable"
+assert get_cuda_arch_versions(), "SageAttention cannot detect a CUDA architecture"
+q = torch.randn((1, 2, 128, 128), device="cuda", dtype=torch.float16)
+out = sageattn(q, q, q)
+assert torch.isfinite(out).all().item(), "SageAttention GPU smoke test failed"
+PY
+}
+if [[ -n "${HADERACH_SAGE_WHEEL:-}" ]]; then
+    pip_install --no-deps --force-reinstall "$HADERACH_SAGE_WHEEL"
+elif ! check_sage; then
+    command -v nvcc >/dev/null ||
+        die 'SageAttention needs a compatible HADERACH_SAGE_WHEEL or an image with nvcc'
+    pip_install setuptools wheel packaging ninja
+    log 'Building SageAttention v2.2.0 from upstream source'
+    MAX_JOBS="${MAX_JOBS:-4}" pip_install --no-build-isolation --no-deps \
+        --force-reinstall 'git+https://github.com/thu-ml/SageAttention.git@v2.2.0'
+fi
+check_sage
 
 log 'Provisioning complete'
