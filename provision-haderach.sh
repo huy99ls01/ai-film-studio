@@ -142,6 +142,21 @@ elif ! check_sage; then
         die 'SageAttention needs a compatible HADERACH_SAGE_WHEEL or an image with nvcc'
     pip_install setuptools wheel packaging ninja
     log 'Building SageAttention v2.2.0 from upstream source'
+    # PyTorch's CUDA wheels can keep headers outside CUDA_HOME/include.
+    cuda_includes=$("$python_bin" - <<'PY'
+import site
+from pathlib import Path
+
+includes = set()
+for directory in site.getsitepackages():
+    nvidia = Path(directory) / "nvidia"
+    includes.update(path for path in nvidia.glob("*/include") if path.is_dir())
+print(":".join(map(str, sorted(includes))))
+PY
+    )
+    if [[ -n "$cuda_includes" ]]; then
+        export CPATH="$cuda_includes${CPATH:+:$CPATH}"
+    fi
     MAX_JOBS="${MAX_JOBS:-1}" EXT_PARALLEL="${EXT_PARALLEL:-1}" \
         pip_install --verbose --no-build-isolation --no-deps \
         --force-reinstall 'git+https://github.com/thu-ml/SageAttention.git@v2.2.0'
