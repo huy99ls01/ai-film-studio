@@ -87,8 +87,9 @@ elif ! check_sage; then
     command -v nvcc >/dev/null ||
         die 'SageAttention needs a compatible HADERACH_SAGE_WHEEL or an image with nvcc'
     pip_install setuptools wheel packaging ninja
+    log 'Building SageAttention v2.2.0 from upstream source'
     MAX_JOBS="${MAX_JOBS:-4}" pip_install --no-build-isolation --no-deps \
-        --force-reinstall sageattention==2.2.0
+        --force-reinstall 'git+https://github.com/thu-ml/SageAttention.git@v2.2.0'
 fi
 check_sage
 
